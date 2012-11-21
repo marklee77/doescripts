@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+# documentation
+# true module structure and upload to pip
+
+def main(argv=None):
+    from os.path import isfile
+    from argparse import ArgumentParser
+    import re
+
+    parser = ArgumentParser(
+        description="Create a series of experimental runs using a set of \
+                     parameters, a matrix, and a command prefix")
+
+    # FIXME: uh, better parameter names?
+    parser.add_argument('-p', '--paramfile', help='parameter file')
+    parser.add_argument('-m', '--matrixfile', help='matrix file')
+    parser.add_argument('-s', '--psep', default=' ', help='parameter separator')
+    parser.add_argument('-c', '--command', default='{}', help='command')
+
+    args = parser.parse_args()
+
+    params = None
+
+    if isfile(args.paramfile):
+        params = [line.strip() for line in open(args.paramfile, 'r')]
+    else:
+        raise SystemExit("error: must specify valid parameter file.")
+
+    if isfile(args.matrixfile):
+        matrix = open(args.matrixfile, 'r')
+    else:
+        raise SystemExit("error: must specify valid matrix file.")
+        
+
+    for row in matrix:
+        if len(params) != len(row) - 1:
+            raise SystemExit(
+                "error: number of parameters and matrix columns must be equal."
+            )
+        expparams = args.psep.join(
+            params[i] for i in range(len(params)) if row[i] == '1')
+        print re.sub('{}', expparams, args.command)
+
+if __name__ == "__main__":
+    main()
