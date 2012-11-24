@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+# documentation
+# true module structure and upload to pip
+
+#FIXME: so, this is only two-level params for now
+#FIXME: auto select smallest possible matrix?
+#FIXME: can get more info from higher strength oas...
+
+def main(argv=None):
+    from argparse import ArgumentParser
+    from os.path import isfile
+    from sys import stdin, stderr
+    from sys import exit
+    import csv
+    import subprocess
+    import re
+
+    parser = ArgumentParser(
+        description="Run an experiment")
+
+    # FIXME: uh, better parameter names?
+    parser.add_argument('-p', '--paramfile', help='parameter file')
+    parser.add_argument('-r', '--results', help='result file')
+    parser.add_argument('-o', '--outvar', default=0,
+        help='index of output variable over which to calculate main effect')
+
+    args = parser.parse_args()
+
+    if isfile(args.paramfile):
+        params = [line.strip() for line in open(args.paramfile, 'r')]
+    else:
+        raise SystemExit("error: must specify valid parameter file.")
+
+    if args.results and isfile(args.results):
+        results = csv.reader(open(args.results, 'r'))
+    else:
+        raise SystemExit("error: must specify valid results file.")
+
+    outvar = int(args.outvar) + 1
+    
+    effects = [0 for param in params]
+
+    for row in results:
+        paramset = row[0]
+        value = float(row[outvar])
+        for i in range(len(effects)):
+            if paramset[i] == '1':
+                effects[i] += value
+            else:
+                effects[i] -= value
+
+    for i in range(len(effects)): 
+        print params[i] + "," + str(effects[i])
+
+if __name__ == "__main__":
+    main()

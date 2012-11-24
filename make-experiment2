@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# documentation
+# true module structure and upload to pip
+
+#FIXME: so, this is only two-level params for now
+#FIXME: auto select smallest possible matrix?
+#FIXME: can get more info from higher strength oas...
+
+def main(argv=None):
+    from argparse import ArgumentParser
+    from os.path import isfile
+    from sys import stdin
+    import re
+
+    parser = ArgumentParser(
+        description="Create a series of experimental runs using a set of \
+                     parameters, a matrix, and a command prefix")
+
+    # FIXME: uh, better parameter names?
+    parser.add_argument('-p', '--paramfile', help='parameter file')
+    parser.add_argument('-m', '--matrixfile', help='matrix file')
+    parser.add_argument('-s', '--psep', default=' ', 
+                        help='parameter separator')
+    parser.add_argument('-i', '--instancefile', default='-', 
+                        help='problem instances file (defaults to stdin)')
+    parser.add_argument('-c', '--command', 
+                        default='{PARAMS} {INSTANCE}', help='command')
+    parser.add_argument('-f', '--fixed', action='append', default=[],
+                        help='i:j, fix parameter i to value j')
+
+    args = parser.parse_args()
+
+    if isfile(args.paramfile):
+        params = [line.strip() for line in open(args.paramfile, 'r')]
+    else:
+        raise SystemExit("error: must specify valid parameter file.")
+
+    if isfile(args.matrixfile):
+        matrix = [[int(line[i]) for i in range(len(line) - 1)] 
+                  for line in open(args.matrixfile, 'r')]
+    else:
+        raise SystemExit("error: must specify valid matrix file.")
+
+    fixedcols = dict(tuple(int(x) for x in y.split(':'))
+                       for y in args.fixed)
+    
+    for row in matrix:
+        for col in fixedcols:
+            row[col] = fixedcols[col]
+
+    if '-' == args.instancefile:
+        instf = stdin
+    elif isfile(args.instancefile):
+        instf = open(args.instancefile, 'r')
+    else:
+        raise SystemExit("error: must specify valid problem instance file.")
+
+    instances = [line.strip() for line in instf]
+
+    for instance in instances:
+        instcmd = re.sub('{INSTANCE}', instance, args.command)
+        for row in matrix:
+            if len(params) > len(row):
+                raise SystemExit("error: number of parameters cannot exceed " +
+                                 "number of matrix columns.")
+            expparams = args.psep.join(
+                params[i] for i in range(len(params)) if row[i] == 1)
+            # FIXME: escape quotes?
+            print ''.join(str(x) for x in row) + "," + \
+                  instance + ",\"" + re.sub('{PARAMS}', expparams, instcmd) + "\""
+
+if __name__ == "__main__":
+    main()

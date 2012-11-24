@@ -1,0 +1,74 @@
+#!/usr/bin/python
+
+""" Create Hadamard Matrix """
+from sys import *
+
+
+def invertRow(row):
+    rowInv = row[:]
+    for i in range(len(row)):
+        if row[i] == 1:
+            rowInv[i] = -1
+        else:
+            rowInv[i] = 1
+    return rowInv
+
+def createMatrix(matrix):
+    resultMatrix = []
+
+    for i in range(len(matrix)):
+        resultMatrix += [matrix[i]+matrix[i]]
+        
+    for i in range(len(matrix)):
+       resultMatrix += [matrix[i]+invertRow(matrix[i])]
+
+    return resultMatrix
+
+def mainCode():
+    matrix = [[1]]
+    dim = 1
+
+    while (dim < int(argv[1])):
+        matrix = createMatrix(matrix)
+        dim *= 2
+        print "dimension: "+str(dim)
+
+    return matrix 
+
+def printMatrix(matrix):
+
+    for x in matrix:
+        for y in x:
+            print y, #not print newline
+        print
+        
+#do the scalar product
+def scalarProduct(row1, row2):
+    sum = 0
+    for i in range(len(row1)):
+        sum += (row1[i]*row2[i])
+
+    print row1
+    print row2
+    
+    if sum == 0:
+        print "orthogonal"
+    else:
+        print "not orthogonal"
+    print "-----------------------------"
+        
+#two codes are orthogonal?
+def verifyOrthogonal(matrix):
+
+    for i in range((len(matrix)-1)):
+        scalarProduct(matrix[i], matrix[i+1])
+    
+        
+if __name__ == "__main__":
+    #print invertRow([0,1,1,0]) #test
+    #print createMatrix([[0, 0], [0, 1]]) #test
+
+    matrix = mainCode()
+    printMatrix(matrix)
+    #verifyOrthogonal(matrix) #test
+    
