@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+# documentation
+# true module structure and upload to pip
+
+#FIXME: so, this is only two-level params for now
+#FIXME: auto select smallest possible matrix?
+#FIXME: can get more info from higher strength oas...
+
+def argmax(values):
+    return max(xrange(len(values)),key=values.__getitem__)
+
+def main(argv=None):
+    from argparse import ArgumentParser
+    from os.path import isfile
+    from sys import stdin, stderr
+    from sys import exit
+    import csv
+    import subprocess
+    import re
+
+    parser = ArgumentParser(
+        description="choose parameter set based on 2-way interactions")
+
+    parser.add_argument('-p', '--paramfile',  help='parameter file')
+    parser.add_argument('-r', '--resultfile', help='result file')
+
+    args = parser.parse_args()
+
+    if isfile(args.paramfile):
+        params = [line.strip() for line in open(args.paramfile, 'r')]
+    else:
+        raise SystemExit("error: must specify valid parameter file.")
+
+    if isfile(args.resultfile):
+        results = [row for row in csv.reader(open(args.resultfile, 'r'))]
+
+    else:
+        raise SystemExit("error: must specify valid results file.")
+
+    portfolio = []
+    scores = []
+    
+    effects = [0 for param in params]
+
+    for row in results:
+        paramset = row[0]
+        value = float(row[2])
+        for i in range(len(params)):
+            if paramset[i] == '1':
+                effects[i] += value
+            else:
+                effects[i] -= value
+
+    i = argmax(effects)
+    portfolio.append(i)
+    scoresout.append(effects[i])
+
+
+    for x in range(10):
+        effects = [0 for param in params]
+        scores = [0 if x in portfolio else None for x in range(len(params))]
+        for row in results:
+            paramset = row[0]
+            value = float(row[2])
+            for i in portfolio:
+                for j in [x for x in range(len(params)) if x not in portfolio]
+                if paramset[i] == '1':
+                    if paramset[j] == '1': 
+                        effects[j] += value
+                    else:
+                        effects[j] -= value
+
+    print portfolio
+
+if __name__ == "__main__":
+    main()
