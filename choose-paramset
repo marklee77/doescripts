@@ -38,7 +38,7 @@ def main(argv=None):
         raise SystemExit("error: must specify valid results file.")
 
     portfolio = []
-    scores = []
+    scoresout = []
     
     effects = [0 for param in params]
 
@@ -55,22 +55,31 @@ def main(argv=None):
     portfolio.append(i)
     scoresout.append(effects[i])
 
-
-    for x in range(10):
-        effects = [0 for param in params]
+    print zip([params[x] for x in portfolio], scoresout)
+    
+    for x in range(20):
         scores = [0 if x in portfolio else None for x in range(len(params))]
-        for row in results:
-            paramset = row[0]
-            value = float(row[2])
-            for i in portfolio:
-                for j in [x for x in range(len(params)) if x not in portfolio]
-                if paramset[i] == '1':
-                    if paramset[j] == '1': 
-                        effects[j] += value
-                    else:
-                        effects[j] -= value
-
-    print portfolio
-
+        for i in portfolio:
+            effects = [0 for param in params]
+            for row in results:
+                paramset = row[0]
+                value = float(row[2])
+                for j in [x for x in range(len(params)) if x not in portfolio]:
+                    if paramset[i] == '1':
+                        if paramset[j] == '1': 
+                            effects[j] += value
+                        else:
+                            effects[j] -= value
+             
+            for j in [x for x in range(len(params)) if x not in portfolio]:
+                if scores[j] == None:
+                    scores[j] = effects[j]
+                else:
+                    scores[j] = min(scores[j], effects[j])
+        i = argmax(scores)
+        portfolio.append(i)
+        scoresout.append(scores[i])
+        print zip([params[x] for x in portfolio], scoresout)
+            
 if __name__ == "__main__":
     main()
